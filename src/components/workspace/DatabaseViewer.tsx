@@ -252,7 +252,7 @@ CREATE TABLE IF NOT EXISTS public.todos (
   return (
     <div className="flex flex-col h-full bg-zinc-950/40">
       {/* Header Tabs */}
-      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/20 text-xs h-9 px-2 shrink-0">
+      <div className="flex items-center justify-between border-b border-zinc-800/55 bg-zinc-950/40 text-xs h-11 px-4 shrink-0 backdrop-blur-md">
         <div className="flex items-center gap-1">
           <Button
             size="sm"

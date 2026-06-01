@@ -73,10 +73,10 @@ export default function AdvisorPanel() {
   return (
     <div className="flex flex-col h-full bg-zinc-950/40 border-l border-zinc-800/80">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/20 h-9 px-2 shrink-0">
+      <div className="flex items-center justify-between border-b border-zinc-800/55 bg-zinc-950/40 h-11 px-4 shrink-0 backdrop-blur-md">
         <div className="flex items-center gap-1.5">
           <HelpCircle size={14} className="text-violet-400" />
-          <span className="text-xs uppercase font-semibold text-zinc-500 tracking-wider">AI Advisor</span>
+          <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider font-mono">AI Advisor</span>
         </div>
         
         <div className="flex items-center gap-2">

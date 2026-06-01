@@ -330,7 +330,7 @@ npm run dev
         </div>
 
         {/* Right Side - Split Chat & Preview */}
-        <div className="w-[500px] shrink-0 h-full flex flex-col border-l border-zinc-800/80">
+        <div className="w-[500px] shrink-0 h-full flex flex-col border-l border-zinc-800/80 min-h-0">
           {/* Top - Live Preview */}
           <PreviewPanel />
 
