@@ -3,10 +3,6 @@ import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-02-15-preview" as any,
-});
-
 // Use service role client because webhooks run outside user session
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,6 +10,15 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(req: Request) {
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeSecretKey) {
+    return NextResponse.json({ error: "Stripe webhook not configured" }, { status: 400 });
+  }
+
+  const stripe = new Stripe(stripeSecretKey, {
+    apiVersion: "2025-02-15-preview" as any,
+  });
+
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature") || "";
 

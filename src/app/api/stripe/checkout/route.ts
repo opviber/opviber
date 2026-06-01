@@ -2,12 +2,19 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-02-15-preview" as any, // fallback standard
-});
-
 export async function POST() {
   try {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const priceId = process.env.STRIPE_REMOVE_ADS_PRICE_ID;
+
+    if (!stripeSecretKey || !priceId) {
+      // In development mode, fallback to letting the frontend try mock-upgrade
+      return NextResponse.json({ message: "Stripe not fully configured. Using mock simulation fallback." }, { status: 200 });
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: "2025-02-15-preview" as any,
+    });
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -26,10 +33,7 @@ export async function POST() {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_REMOVE_ADS_PRICE_ID) {
-      // In development mode, fallback to letting the frontend try mock-upgrade
-      return NextResponse.json({ message: "Stripe not fully configured. Using mock simulation fallback." }, { status: 200 });
-    }
+
 
     // Create or retrieve Stripe customer
     let stripeCustomerId = profile.stripe_customer_id;
