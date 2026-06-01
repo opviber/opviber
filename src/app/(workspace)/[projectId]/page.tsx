@@ -318,26 +318,26 @@ npm run dev
         </div>
 
         {/* Sidebar Panel Content */}
-        <div className="w-64 shrink-0 h-full">
+        <div className="w-64 shrink-0 h-full flex flex-col">
           {activeSidebarTab === "files" && <FileExplorer />}
           {activeSidebarTab === "database" && <DatabaseViewer />}
           {activeSidebarTab === "advisor" && <AdvisorPanel />}
         </div>
 
         {/* Center - Monaco Code Editor */}
-        <div className="flex-1 h-full min-w-0">
+        <div className="flex-1 h-full min-w-0 flex flex-col">
           <CodeEditor />
         </div>
 
         {/* Right Side - Split Chat & Preview */}
         <div className="w-[500px] shrink-0 h-full flex flex-col border-l border-zinc-800/80">
           {/* Top - Live Preview */}
-          <div className="flex-1 min-h-0 border-b border-zinc-800/80">
+          <div className="flex-1 min-h-0 border-b border-zinc-800/80 flex flex-col">
             <PreviewPanel />
           </div>
 
           {/* Bottom - AI Chat Panel */}
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col">
             <ChatPanel />
           </div>
         </div>

@@ -222,7 +222,7 @@ Identify the bug, explain it briefly, and rewrite the file using the standard fi
   return (
     <div className="flex flex-col h-full bg-zinc-950/40 border-l border-zinc-800/80">
       {/* Header controls */}
-      <div className="flex items-center justify-between p-3 border-b border-zinc-800/80 bg-zinc-950/20">
+      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/20 h-9 px-2 shrink-0">
         <span className="text-xs uppercase font-semibold text-zinc-500 tracking-wider">AI Developer</span>
         
         <div className="flex items-center gap-2">

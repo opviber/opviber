@@ -171,7 +171,7 @@ export default function FileExplorer() {
 
   return (
     <div className="flex flex-col h-full bg-zinc-950/40 border-r border-zinc-800/80">
-      <div className="flex items-center justify-between p-3 border-b border-zinc-800/80">
+      <div className="flex items-center justify-between border-b border-zinc-800/80 h-9 px-2 shrink-0">
         <span className="text-xs uppercase font-semibold text-zinc-500 tracking-wider">Workspace Files</span>
         
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

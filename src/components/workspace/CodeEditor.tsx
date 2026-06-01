@@ -90,7 +90,7 @@ export default function CodeEditor() {
   return (
     <div className="flex flex-col h-full bg-zinc-950/20">
       {/* File Tabs */}
-      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/40">
+      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/40 h-9 shrink-0">
         <div className="flex overflow-x-auto flex-1 scrollbar-none">
           {openTabs.map((path) => {
             const isActive = activeFilePath === path;

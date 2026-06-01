@@ -351,7 +351,7 @@ export default function PreviewPanel() {
   return (
     <div className="flex flex-col h-full bg-zinc-950/20">
       {/* Device Toolbar */}
-      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/40 p-2 text-xs">
+      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/40 h-9 px-2 text-xs shrink-0">
         <div className="flex items-center gap-1.5">
           <Button
             size="icon"
