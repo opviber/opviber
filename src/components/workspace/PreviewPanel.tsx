@@ -13,11 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function PreviewPanel() {
-  const { files, devicePreview, setDevicePreview, activeFilePath } = useProjectStore();
+  const { files, devicePreview, setDevicePreview, activeFilePath, setRuntimeError } = useProjectStore();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeKey, setIframeKey] = useState(0);
 
   const reloadIframe = () => {
+    setRuntimeError(null);
     setIframeKey(prev => prev + 1);
   };
 
@@ -26,6 +27,22 @@ export default function PreviewPanel() {
     acc[path] = files[path].content;
     return acc;
   }, {} as Record<string, string>);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data) return;
+      if (data.type === "PREVIEW_ERROR") {
+        setRuntimeError({ source: data.source, message: data.message });
+      } else if (data.type === "PREVIEW_SUCCESS") {
+        setRuntimeError(null);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [setRuntimeError]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -162,6 +179,29 @@ export default function PreviewPanel() {
       </div>
 
       <script>
+        // Global error handlers
+        window.onerror = function(message, source, lineno, colno, error) {
+          const cleanSource = source ? (source.includes("src/") ? "src/" + source.split("src/")[1] : source.split("/").pop()) : "runtime";
+          const errMessage = error ? error.message : message;
+          const displayMsg = errMessage + (lineno ? " (at " + cleanSource + ":" + lineno + ":" + colno + ")" : "");
+          window.parent.postMessage({
+            type: "PREVIEW_ERROR",
+            source: cleanSource,
+            message: displayMsg
+          }, "*");
+          return false;
+        };
+
+        window.addEventListener("unhandledrejection", function(event) {
+          const reason = event.reason;
+          const msg = reason instanceof Error ? reason.message : String(reason);
+          window.parent.postMessage({
+            type: "PREVIEW_ERROR",
+            source: "Promise Rejection",
+            message: msg
+          }, "*");
+        });
+
         // Simple in-browser Virtual Module System
         window.__modules = {};
         window.__files = {};
@@ -250,6 +290,11 @@ export default function PreviewPanel() {
         }
 
         function renderError(filename, message) {
+          window.parent.postMessage({
+            type: "PREVIEW_ERROR",
+            source: filename,
+            message: message
+          }, "*");
           const root = document.getElementById("root");
           root.innerHTML = \`
             <div class="p-6 bg-red-950/20 border border-red-500/30 rounded-lg max-w-2xl mx-auto my-12">
@@ -277,8 +322,16 @@ export default function PreviewPanel() {
             const container = document.getElementById("root");
             const root = ReactDOM.createRoot(container);
             root.render(React.createElement(RootComponent));
+            
+            // Post success to parent
+            window.parent.postMessage({ type: "PREVIEW_SUCCESS" }, "*");
           } catch (err) {
             console.error("Initialization error", err);
+            window.parent.postMessage({
+              type: "PREVIEW_ERROR",
+              source: entryPath,
+              message: err.message
+            }, "*");
           }
         }
 

@@ -12,7 +12,8 @@ import {
   Trash2, 
   Plus, 
   FilePlus, 
-  FolderPlus 
+  FolderPlus,
+  Sparkles 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,7 @@ interface TreeNode {
 }
 
 export default function FileExplorer() {
-  const { files, activeFilePath, setActiveFile, createFile, deleteFile, toggleFileLock } = useProjectStore();
+  const { files, activeFilePath, setActiveFile, createFile, deleteFile, toggleFileLock, scopedFile, setScopedFile } = useProjectStore();
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({ "src": true, "src/app": true });
   const [newFilePath, setNewFilePath] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -90,6 +91,7 @@ export default function FileExplorer() {
   const renderNode = (node: TreeNode, depth = 0) => {
     const isExpanded = expandedFolders[node.path];
     const isActive = activeFilePath === node.path;
+    const isScoped = scopedFile === node.path;
     const isLocked = files[node.path]?.is_locked;
 
     if (node.isFolder) {
@@ -130,6 +132,16 @@ export default function FileExplorer() {
         </div>
         
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setScopedFile(isScoped ? null : node.path);
+            }}
+            className={`p-1 rounded hover:text-zinc-100 transition ${isScoped ? "text-violet-400" : "text-zinc-500"}`}
+            title={isScoped ? "Remove AI scope" : "Scope AI edits to this file"}
+          >
+            <Sparkles size={12} className={isScoped ? "animate-pulse" : ""} />
+          </button>
           <button
             onClick={(e) => {
               e.stopPropagation();

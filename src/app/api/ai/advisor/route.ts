@@ -2,7 +2,7 @@ import { streamText } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/crypto";
 import { getModelInstance } from "@/lib/ai/providers";
-import { CODE_GENERATOR_PROMPT } from "@/lib/ai/system-prompts";
+import { ADVISOR_PROMPT } from "@/lib/ai/system-prompts";
 
 export async function POST(req: Request) {
   try {
@@ -13,9 +13,9 @@ export async function POST(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const { projectId, messages, provider, modelName, scopedFile } = await req.json();
+    const { projectId, provider, modelName } = await req.json();
 
-    if (!projectId || !messages || !provider) {
+    if (!projectId || !provider) {
       return new Response("Missing required parameters", { status: 400 });
     }
 
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     if (keyErr || !keyData) {
       return new Response(
-        JSON.stringify({ error: `API key not found for ${provider}. Please add your key in settings.` }),
+        JSON.stringify({ error: `API key not found for ${provider}. Please configure it in settings.` }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       return new Response("Failed to decrypt API key", { status: 500 });
     }
 
-    // 3. Load project & active files
+    // 3. Fetch project details & files list
     const { data: project } = await supabase
       .from("projects")
       .select("name, description")
@@ -51,57 +51,37 @@ export async function POST(req: Request) {
 
     const { data: files } = await supabase
       .from("project_files")
-      .select("path, content")
+      .select("path")
       .eq("project_id", projectId);
 
-    // 4. Construct file tree representation as context
-    let filesContext = "";
-    if (files && files.length > 0) {
-      filesContext = files
-        .map((f) => `--- FILE: ${f.path} ---\n${f.content}\n--- END FILE ---`)
-        .join("\n\n");
-    } else {
-      filesContext = "No files created in project yet.";
-    }
-
-    let scopedDirective = "";
-    if (scopedFile) {
-      scopedDirective = `
-### SCOPED EDIT MODE ACTIVE
-IMPORTANT: You must ONLY modify or write to the file "${scopedFile}". 
-Do NOT edit, delete, or create any other files in this request. Focus 100% of your changes inside <file path="${scopedFile}">...</file>.
-`;
-    }
+    const filesList = files && files.length > 0 
+      ? files.map(f => `- ${f.path}`).join("\n") 
+      : "No files created yet.";
 
     const finalSystemPrompt = `
-${CODE_GENERATOR_PROMPT}
+${ADVISOR_PROMPT}
 
-### Current Project Context
-Project Name: ${project?.name || "Untitled Project"}
+### Current Project Details:
+Project Name: ${project?.name || "Untitled"}
 Project Description: ${project?.description || "No description provided."}
 
-${scopedDirective}
-
-### Existing Project Codebase
-Below are the files currently present in the user's workspace.
-${scopedFile ? `You are editing: ${scopedFile}. You can view the rest of the codebase for context, but you must only output changes for "${scopedFile}".` : 'You can modify any of these files or create new ones using the <file path="...">...</file> syntax.'}
-
-${filesContext}
+### File Tree structure:
+${filesList}
 `;
 
-    // 5. Initialize dynamic model instance
+    // 4. Get LLM model instance
     const model = getModelInstance(provider, apiKey, modelName);
 
-    // 6. Return response stream
+    // 5. Generate and stream text
     const result = streamText({
       model,
       system: finalSystemPrompt,
-      messages,
+      prompt: "Analyze my current project and provide your strategic product and UX recommendations.",
     });
 
     return result.toTextStreamResponse();
   } catch (error: any) {
-    console.error("Chat route error:", error);
+    console.error("Advisor API error:", error);
     return new Response(JSON.stringify({ error: error.message || "Internal server error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

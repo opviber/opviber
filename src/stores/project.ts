@@ -27,6 +27,8 @@ interface ProjectState {
   isGenerating: boolean;
   previewUrl: string | null;
   devicePreview: "desktop" | "tablet" | "mobile";
+  runtimeError: { source: string; message: string } | null;
+  scopedFile: string | null;
   
   // Actions
   setProjectId: (id: string | null) => void;
@@ -41,6 +43,8 @@ interface ProjectState {
   addChatMessage: (msg: ChatMessage) => void;
   setGenerating: (val: boolean) => void;
   setDevicePreview: (device: "desktop" | "tablet" | "mobile") => void;
+  setRuntimeError: (err: { source: string; message: string } | null) => void;
+  setScopedFile: (path: string | null) => void;
 }
 
 const supabase = createClient();
@@ -57,6 +61,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   isGenerating: false,
   previewUrl: null,
   devicePreview: "desktop",
+  runtimeError: null,
+  scopedFile: null,
 
   setProjectId: (id) => set({ currentProjectId: id }),
 
@@ -305,4 +311,6 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   setGenerating: (val) => set({ isGenerating: val }),
   setDevicePreview: (device) => set({ devicePreview: device }),
+  setRuntimeError: (err) => set({ runtimeError: err }),
+  setScopedFile: (path) => set({ scopedFile: path }),
 }));

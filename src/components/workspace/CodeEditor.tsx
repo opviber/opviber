@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { useProjectStore } from "@/stores/project";
-import { X, Save, Lock } from "lucide-react";
+import { X, Save, Lock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function CodeEditor() {
@@ -14,7 +14,9 @@ export default function CodeEditor() {
     setActiveFile, 
     closeTab, 
     updateFileContent, 
-    saveFileToDb 
+    saveFileToDb,
+    scopedFile,
+    setScopedFile
   } = useProjectStore();
 
   const [savingState, setSavingState] = useState<Record<string, "idle" | "saving" | "saved">>({});
@@ -121,7 +123,22 @@ export default function CodeEditor() {
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center px-3 border-l border-zinc-900 h-full">
+        <div className="flex items-center px-3 border-l border-zinc-900 h-full gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setScopedFile(scopedFile === activeFile.path ? null : activeFile.path)}
+            className={`h-7 gap-1 text-xs transition ${
+              scopedFile === activeFile.path ? "text-violet-400 bg-violet-500/10 hover:text-violet-300" : "text-zinc-400 hover:text-white"
+            }`}
+            title={scopedFile === activeFile.path ? "AI edits are scoped to this file" : "Scope AI edits to this file"}
+          >
+            <Sparkles size={12} className={scopedFile === activeFile.path ? "animate-pulse" : ""} />
+            {scopedFile === activeFile.path ? "Scoped" : "Scope AI"}
+          </Button>
+          
+          <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
+
           <Button
             size="sm"
             variant="ghost"

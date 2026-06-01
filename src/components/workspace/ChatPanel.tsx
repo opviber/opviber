@@ -7,7 +7,7 @@ import { parseAiResponse, getCleanExplanation } from "@/lib/ai/parser";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Sparkles, Loader2, KeyRound } from "lucide-react";
+import { Send, Sparkles, Loader2, KeyRound, Bug } from "lucide-react";
 import AdBanner from "@/components/layout/AdBanner";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -20,7 +20,10 @@ export default function ChatPanel() {
     files, 
     createFile, 
     deleteFile, 
-    saveFileToDb 
+    saveFileToDb,
+    runtimeError,
+    scopedFile,
+    setScopedFile
   } = useProjectStore();
   
   const { apiKeysStatus, profile } = useUserStore();
@@ -41,23 +44,20 @@ export default function ChatPanel() {
     setInput(e.target.value);
   };
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (promptText: string) => {
+    if (!promptText.trim() || isLoading) return;
 
     if (!keyAdded) {
       toast.warning(`Please add your API key for ${provider} in settings first.`);
       return;
     }
 
-    const userPrompt = input.trim();
-    setInput("");
     setIsLoading(true);
 
     // 1. Add User Message to local store
     addChatMessage({
       role: "user",
-      content: userPrompt,
+      content: promptText,
     });
 
     // 2. Persist User Message to Supabase DB
@@ -68,7 +68,7 @@ export default function ChatPanel() {
         body: JSON.stringify({
           projectId: currentProjectId,
           role: "user",
-          content: userPrompt,
+          content: promptText,
         }),
       });
     } catch (err) {
@@ -84,7 +84,7 @@ export default function ChatPanel() {
     // Append the current prompt
     messagesHistory.push({
       role: "user",
-      content: userPrompt,
+      content: promptText,
     });
 
     try {
@@ -96,6 +96,7 @@ export default function ChatPanel() {
           projectId: currentProjectId,
           messages: messagesHistory,
           provider,
+          scopedFile,
         }),
       });
 
@@ -115,16 +116,12 @@ export default function ChatPanel() {
       }
 
       // We add a temporary message inside UI that we'll modify as we stream
-      // But since we want to stream text dynamically, let's process the stream
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
         assistantResponse += chunk;
-        
-        // Let's force update the last message in Zustand or set local state
-        // To make it extremely clean, we can just save it fully on finish
       }
 
       // 5. On Finish: Add final assistant message to local Zustand store
@@ -183,6 +180,43 @@ export default function ChatPanel() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const promptText = input.trim();
+    if (!promptText) return;
+    setInput("");
+    await sendMessage(promptText);
+  };
+
+  const handleAutoFix = async () => {
+    if (!runtimeError || isLoading) return;
+
+    let resolvedSourcePath = runtimeError.source;
+    if (!files[resolvedSourcePath]) {
+      const match = Object.keys(files).find(
+        (k) => k.endsWith(resolvedSourcePath) || resolvedSourcePath.endsWith(k)
+      );
+      if (match) resolvedSourcePath = match;
+    }
+
+    const errorFileContent = files[resolvedSourcePath]?.content || "";
+    const autoFixPrompt = `Fix the runtime error in my project.
+Location: ${runtimeError.source}
+Error Message: ${runtimeError.message}
+
+${errorFileContent ? `Current content of file ${resolvedSourcePath}:
+\`\`\`tsx
+${errorFileContent}
+\`\`\`` : "Check the project files and solve this error."}
+
+Identify the bug, explain it briefly, and rewrite the file using the standard file output blocks like:
+<file path="${resolvedSourcePath}">
+// corrected code
+</file>`;
+
+    await sendMessage(autoFixPrompt);
   };
 
   return (
@@ -266,6 +300,52 @@ export default function ChatPanel() {
       {hasAds && (
         <div className="px-4 py-2 border-t border-zinc-900 bg-zinc-950/20">
           <AdBanner type="carbon" />
+        </div>
+      )}
+
+      {/* Auto-Fix Error Banner */}
+      {runtimeError && (
+        <div className="mx-3 mt-2 mb-1 p-2 bg-rose-950/30 border border-rose-500/20 rounded-md flex items-center justify-between gap-2 text-xs">
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-rose-400 truncate flex items-center gap-1">
+              <Bug size={12} className="text-rose-500" />
+              Error in {runtimeError.source.split("/").pop()}
+            </p>
+            <p className="text-[10px] text-zinc-400 line-clamp-1">{runtimeError.message}</p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="destructive"
+            onClick={handleAutoFix}
+            disabled={isLoading || !keyAdded}
+            className="h-7 px-2.5 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-medium gap-1 flex-shrink-0"
+          >
+            <Sparkles size={11} className="animate-pulse" />
+            Auto-Fix
+          </Button>
+        </div>
+      )}
+
+      {/* Scoped Edit Banner */}
+      {scopedFile && (
+        <div className="mx-3 mt-2 mb-1 p-2 bg-violet-950/30 border border-violet-500/20 rounded-md flex items-center justify-between gap-2 text-xs">
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-violet-450 truncate flex items-center gap-1">
+              <Sparkles size={12} className="text-violet-400 animate-pulse" />
+              Scope: {scopedFile.split("/").pop()}
+            </p>
+            <p className="text-[10px] text-zinc-400 truncate">{scopedFile}</p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => setScopedFile(null)}
+            className="h-7 px-2 hover:bg-zinc-800 text-zinc-400 hover:text-white text-[11px] font-medium"
+          >
+            Clear
+          </Button>
         </div>
       )}
 
