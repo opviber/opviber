@@ -241,7 +241,7 @@ export default function PreviewPanel() {
           try {
             const cleanCode = fileContent.replace(/^["']use client["'];?\\n?/, "");
             const transformed = Babel.transform(cleanCode, {
-              presets: ["react", "typescript"],
+              presets: ["env", "react", "typescript"],
               filename: resolvedPath
             }).code;
 
