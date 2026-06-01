@@ -16,7 +16,7 @@ export function getModelInstance(provider: string, apiKey: string, modelName?: s
     }
     case "google": {
       const google = createGoogleGenerativeAI({ apiKey });
-      return google(modelName || "gemini-1.5-pro");
+      return google(modelName || "gemini-1.5-flash");
     }
     case "mistral": {
       const mistral = createMistral({ apiKey });

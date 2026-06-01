@@ -332,14 +332,10 @@ npm run dev
         {/* Right Side - Split Chat & Preview */}
         <div className="w-[500px] shrink-0 h-full flex flex-col border-l border-zinc-800/80">
           {/* Top - Live Preview */}
-          <div className="flex-1 min-h-0 border-b border-zinc-800/80 flex flex-col">
-            <PreviewPanel />
-          </div>
+          <PreviewPanel />
 
           {/* Bottom - AI Chat Panel */}
-          <div className="flex-1 min-h-0 flex flex-col">
-            <ChatPanel />
-          </div>
+          <ChatPanel />
         </div>
       </div>
     </div>

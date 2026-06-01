@@ -10,7 +10,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { projectId, role, content, metadata } = await req.json();
+    const body = await req.json();
+    console.log("Save chat message request body:", body);
+    const { projectId, role, content, metadata } = body;
 
     if (!projectId || !role || !content) {
       return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
