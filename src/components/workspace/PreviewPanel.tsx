@@ -349,7 +349,7 @@ export default function PreviewPanel() {
   `;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 border-b border-zinc-800/80 bg-zinc-950/20">
+    <div className="flex flex-col flex-1 min-h-0 bg-zinc-950/20">
       {/* Device Toolbar */}
       <div className="flex items-center justify-between border-b border-zinc-800/50 bg-zinc-950/40 h-11 px-4 text-xs shrink-0 backdrop-blur-md">
         <div className="flex items-center gap-1.5">

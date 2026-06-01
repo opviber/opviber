@@ -36,6 +36,7 @@ export default function WorkspacePage() {
   const [showEditor, setShowEditor] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
   const [showChat, setShowChat] = useState(true);
+  const [layoutMode, setLayoutMode] = useState<"ide" | "preview-first">("ide");
 
   // GitHub integration state
   const [isGitHubOpen, setIsGitHubOpen] = useState(false);
@@ -179,47 +180,74 @@ npm run dev
           </div>
         </div>
 
-        {/* Layout Control Group */}
-        <div className="hidden md:flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/40 p-1 rounded-lg backdrop-blur-md">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowSidebar(!showSidebar)}
-            className={`h-7 w-7 rounded-md transition cursor-pointer ${showSidebar ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
-            title="Toggle Sidebar"
-          >
-            <Folder size={14} />
-          </Button>
+        {/* Layout Mode Selector & Controls (Center of Header) */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center bg-zinc-900/80 border border-zinc-800/40 p-0.5 rounded-lg backdrop-blur-md h-8 shadow-inner shadow-black/40">
+            <button
+              onClick={() => setLayoutMode("ide")}
+              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition cursor-pointer font-mono ${
+                layoutMode === "ide"
+                  ? "bg-violet-600 text-white shadow-md shadow-violet-950/20"
+                  : "text-zinc-450 hover:text-zinc-200"
+              }`}
+            >
+              Editor
+            </button>
+            <button
+              onClick={() => setLayoutMode("preview-first")}
+              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition cursor-pointer font-mono ${
+                layoutMode === "preview-first"
+                  ? "bg-violet-600 text-white shadow-md shadow-violet-950/20"
+                  : "text-zinc-450 hover:text-zinc-200"
+              }`}
+            >
+              Preview
+            </button>
+          </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowEditor(!showEditor)}
-            className={`h-7 w-7 rounded-md transition cursor-pointer ${showEditor ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
-            title="Toggle Code Editor"
-          >
-            <Code2 size={14} />
-          </Button>
+          {layoutMode === "ide" && (
+            <div className="hidden md:flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/40 p-1 rounded-lg backdrop-blur-md">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSidebar(!showSidebar)}
+                className={`h-7 w-7 rounded-md transition cursor-pointer ${showSidebar ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
+                title="Toggle Sidebar"
+              >
+                <Folder size={14} />
+              </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowPreview(!showPreview)}
-            className={`h-7 w-7 rounded-md transition cursor-pointer ${showPreview ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
-            title="Toggle Live Preview"
-          >
-            <Laptop size={14} />
-          </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowEditor(!showEditor)}
+                className={`h-7 w-7 rounded-md transition cursor-pointer ${showEditor ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
+                title="Toggle Code Editor"
+              >
+                <Code2 size={14} />
+              </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowChat(!showChat)}
-            className={`h-7 w-7 rounded-md transition cursor-pointer ${showChat ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
-            title="Toggle AI Copilot"
-          >
-            <Sparkles size={14} />
-          </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowPreview(!showPreview)}
+                className={`h-7 w-7 rounded-md transition cursor-pointer ${showPreview ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
+                title="Toggle Live Preview"
+              >
+                <Laptop size={14} />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowChat(!showChat)}
+                className={`h-7 w-7 rounded-md transition cursor-pointer ${showChat ? "text-violet-400 bg-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}
+                title="Toggle AI Copilot"
+              >
+                <Sparkles size={14} />
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -327,77 +355,100 @@ npm run dev
             </button>
           </Link>
         </div>
-      </header>
-
-      {/* Main Panel Split */}
+      </header>      {/* Main Panel Split */}
       <div className="flex flex-1 overflow-hidden min-h-0">
-        {/* Activity Bar (VS Code Style) */}
-        <div className="w-12 shrink-0 bg-zinc-950 border-r border-zinc-900 flex flex-col items-center py-4 gap-4">
-          <button
-            onClick={() => {
-              setActiveSidebarTab("files");
-              setShowSidebar(true);
-            }}
-            className={`p-2 rounded-lg transition-all cursor-pointer ${
-              activeSidebarTab === "files" ? "text-violet-400 bg-zinc-900" : "text-zinc-500 hover:text-zinc-300"
-            }`}
-            title="File Explorer"
-          >
-            <Folder size={18} />
-          </button>
+        {layoutMode === "ide" ? (
+          <>
+            {/* Activity Bar (VS Code Style) */}
+            <div className="w-12 shrink-0 bg-zinc-950 border-r border-zinc-900 flex flex-col items-center py-4 gap-4">
+              <button
+                onClick={() => {
+                  setActiveSidebarTab("files");
+                  setShowSidebar(true);
+                }}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  activeSidebarTab === "files" ? "text-violet-400 bg-zinc-900" : "text-zinc-550 hover:text-zinc-300"
+                }`}
+                title="File Explorer"
+              >
+                <Folder size={18} />
+              </button>
 
-          <button
-            onClick={() => {
-              setActiveSidebarTab("database");
-              setShowSidebar(true);
-            }}
-            className={`p-2 rounded-lg transition-all cursor-pointer ${
-              activeSidebarTab === "database" ? "text-violet-400 bg-zinc-900" : "text-zinc-550 hover:text-zinc-300"
-            }`}
-            title="Database & Schema Viewer"
-          >
-            <Database size={18} />
-          </button>
+              <button
+                onClick={() => {
+                  setActiveSidebarTab("database");
+                  setShowSidebar(true);
+                }}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  activeSidebarTab === "database" ? "text-violet-400 bg-zinc-900" : "text-zinc-555 hover:text-zinc-300"
+                }`}
+                title="Database & Schema Viewer"
+              >
+                <Database size={18} />
+              </button>
 
-          <button
-            onClick={() => {
-              setActiveSidebarTab("advisor");
-              setShowSidebar(true);
-            }}
-            className={`p-2 rounded-lg transition-all cursor-pointer ${
-              activeSidebarTab === "advisor" ? "text-violet-400 bg-zinc-900" : "text-zinc-550 hover:text-zinc-300"
-            }`}
-            title="Product Advisor"
-          >
-            <HelpCircle size={18} />
-          </button>
-        </div>
+              <button
+                onClick={() => {
+                  setActiveSidebarTab("advisor");
+                  setShowSidebar(true);
+                }}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  activeSidebarTab === "advisor" ? "text-violet-400 bg-zinc-900" : "text-zinc-555 hover:text-zinc-300"
+                }`}
+                title="Product Advisor"
+              >
+                <HelpCircle size={18} />
+              </button>
+            </div>
 
-        {/* Sidebar Panel Content */}
-        {showSidebar && (
-          <div className="w-64 shrink-0 h-full flex flex-col">
-            {activeSidebarTab === "files" && <FileExplorer />}
-            {activeSidebarTab === "database" && <DatabaseViewer />}
-            {activeSidebarTab === "advisor" && <AdvisorPanel />}
-          </div>
-        )}
+            {/* Sidebar Panel Content */}
+            {showSidebar && (
+              <div className="w-64 shrink-0 h-full flex flex-col border-r border-zinc-900">
+                {activeSidebarTab === "files" && <FileExplorer />}
+                {activeSidebarTab === "database" && <DatabaseViewer />}
+                {activeSidebarTab === "advisor" && <AdvisorPanel />}
+              </div>
+            )}
 
-        {/* Center - Monaco Code Editor */}
-        {showEditor && (
-          <div className="flex-1 h-full min-w-0 flex flex-col">
-            <CodeEditor />
-          </div>
-        )}
+            {/* Center - Monaco Code Editor */}
+            {showEditor && (
+              <div className="flex-1 h-full min-w-0 flex flex-col">
+                <CodeEditor />
+              </div>
+            )}
 
-        {/* Right Side - Split Chat & Preview */}
-        {(showPreview || showChat) && (
-          <div className={`${showEditor ? "w-[500px] shrink-0" : "flex-1 min-w-0"} h-full flex flex-col border-l border-zinc-800/80 min-h-0`}>
-            {/* Top - Live Preview */}
-            {showPreview && <PreviewPanel />}
+            {/* Right Side - Split Chat & Preview */}
+            {(showPreview || showChat) && (
+              <div className={`${showEditor ? "w-[500px] shrink-0" : "flex-1 min-w-0"} h-full flex flex-col border-l border-zinc-800/80 min-h-0`}>
+                {/* Top - Live Preview */}
+                {showPreview && (
+                  <div className="flex-1 min-h-0 border-b border-zinc-800/80 flex flex-col">
+                    <PreviewPanel />
+                  </div>
+                )}
 
-            {/* Bottom - AI Chat Panel */}
-            {showChat && <ChatPanel />}
-          </div>
+                {/* Bottom - AI Chat Panel */}
+                {showChat && (
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    <ChatPanel />
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          /* Preview-First Mode: Chat on Left, Preview on Right (Bolt.new / Lovable Style) */
+          <>
+            {/* Left Column: AI Chat Panel */}
+            <div className="w-[420px] shrink-0 h-full flex flex-col border-r border-zinc-900 min-h-0">
+              <ChatPanel />
+            </div>
+
+            {/* Right Column: Live Preview */}
+            <div className="flex-1 h-full flex flex-col min-h-0">
+              <PreviewPanel />
+            </div>
+          </>
         )}
       </div>
     </div>

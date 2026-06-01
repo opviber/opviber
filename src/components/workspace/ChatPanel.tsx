@@ -244,7 +244,7 @@ Identify the bug, explain it briefly, and rewrite the file using the standard fi
   ];
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 bg-zinc-950/80 border-t border-zinc-900">
+    <div className="flex flex-col flex-1 min-h-0 bg-zinc-950/80">
       {/* Header controls (Sleek Glassmorphic Header) */}
       <div className="flex items-center justify-between border-b border-zinc-800/50 bg-zinc-950/40 h-11 px-4 shrink-0 backdrop-blur-md">
         <div className="flex items-center gap-2">
